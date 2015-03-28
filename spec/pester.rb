@@ -1,7 +1,7 @@
 require 'spec_helper'
 
-class MatchedError < RuntimeError ; end
-class UnmatchedError < RuntimeError ; end
+class MatchedError < RuntimeError; end
+class UnmatchedError < RuntimeError; end
 
 shared_examples 'raises an error' do
   it 'raises an error and succeeds 0 times' do
@@ -52,7 +52,6 @@ shared_examples 'raises an error only in the correct cases with a retry class' d
   context 'when the class is in the list, and the message is matched' do
     let(:actual_error_class) { matching_error_class }
     let(:actual_error_message) { matching_error_message }
-
 
     it_has_behavior "doesn't raise an error"
 
@@ -112,7 +111,7 @@ describe 'retry_action' do
     end
 
     context 'with on_max_attempts_exceeded specified (which does not raise)' do
-      let(:do_nothing_proc) { Proc.new {} }
+      let(:do_nothing_proc) { proc {} }
       let(:options) do
         {
           max_attempts: max_attempts,
@@ -134,7 +133,7 @@ describe 'retry_action' do
     let(:matching_error_message) { 'Lost connection to MySQL server' }
     let(:non_matching_error_message) { 'You have an error in your SQL syntax' }
 
-    context "Using retry error classes" do
+    context 'Using retry error classes' do
       let(:options) do
         {
           retry_error_classes: expected_error_classes,
@@ -157,7 +156,7 @@ describe 'retry_action' do
       end
     end
 
-    context "Using reraise error classes" do
+    context 'Using reraise error classes' do
       let(:options) do
         {
           reraise_error_classes: expected_error_classes,

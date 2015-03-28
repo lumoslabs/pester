@@ -80,7 +80,7 @@ module Pester
       Rails.logger
     else
       require 'logger'
-      Logger.new(STDOUT)
+      @logger ||= Logger.new(STDOUT)
     end
   end
 

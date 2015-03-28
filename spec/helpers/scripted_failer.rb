@@ -8,9 +8,9 @@ class ScriptedFailer
   end
 
   def fail(error_class, msg)
-    if (@fails > 0)
+    if @fails > 0
       @fails -= 1
-      raise error_class.new(msg)
+      fail error_class, msg
     end
     @successes += 1
     @result
