@@ -179,5 +179,3 @@ describe 'retry_action' do
     end
   end
 end
-
-
