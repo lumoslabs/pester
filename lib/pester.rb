@@ -73,14 +73,20 @@ module Pester
     end
   end
 
+  class << self
+    attr_accessor :logger
+  end
+
   private
 
   def self.logger
-    if defined? Rails
-      Rails.logger
-    else
-      require 'logger'
-      @logger ||= Logger.new(STDOUT)
+    @logger ||= begin
+      if defined? Rails
+        Rails.logger
+      else
+        require 'logger' unless defined? Logger
+        @logger = Logger.new(STDOUT)
+      end
     end
   end
 
