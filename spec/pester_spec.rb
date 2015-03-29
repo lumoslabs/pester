@@ -1,3 +1,4 @@
+require 'logger'
 require 'spec_helper'
 
 class MatchedError < RuntimeError; end
@@ -176,6 +177,28 @@ describe 'retry_action' do
 
         it_has_behavior 'raises an error only in the correct cases with a reraise class'
       end
+    end
+  end
+end
+
+describe 'logger' do
+  context 'when not otherwise configured' do
+    it 'defaults to the ruby logger' do
+      Pester.configure do |config|
+        config.logger = nil
+      end
+      expect(Pester::Config.logger).to_not be_nil
+      expect(Pester::Config.logger).to be_kind_of(Logger)
+    end
+  end
+
+  context 'when configured to use a particular class' do
+    it 'users that class' do
+      Pester.configure do |config|
+        config.logger = NullLogger.new
+      end
+      expect(Pester::Config.logger).to_not be_nil
+      expect(Pester::Config.logger).to be_kind_of(NullLogger)
     end
   end
 end

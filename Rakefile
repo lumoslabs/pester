@@ -9,6 +9,6 @@ end
 require 'rubocop/rake_task'
 RuboCop::RakeTask.new
 
-task prep: ['spec', 'rubocop']
+task prep: %w(spec rubocop)
 
 task default: :spec

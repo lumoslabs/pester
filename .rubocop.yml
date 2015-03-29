@@ -7,5 +7,8 @@ Metrics/LineLength:
 Style/Documentation:
     Enabled: false
 
+Style/RaiseArgs:
+    Enabled: false
+
 Style/SignalException:
   Enabled: false
