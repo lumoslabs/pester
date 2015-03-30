@@ -1,8 +1,13 @@
 require 'pester/behaviors'
 require 'pester/behaviors/sleep'
+require 'pester/config'
 require 'pester/version'
 
 module Pester
+  def self.configure(&block)
+    Config.configure(&block)
+  end
+
   def self.retry(options = {}, &block)
     retry_action(options.merge(on_retry: ->(_, delay_interval) { sleep(delay_interval) }), &block)
   end
@@ -75,15 +80,6 @@ module Pester
 
   private
 
-  def self.logger
-    if defined? Rails
-      Rails.logger
-    else
-      require 'logger'
-      @logger ||= Logger.new(STDOUT)
-    end
-  end
-
   def self.merge_defaults(opts)
     opts[:retry_error_classes]      = opts[:retry_error_classes] ? Array(opts[:retry_error_classes]) : nil
     opts[:reraise_error_classes]    = opts[:reraise_error_classes] ? Array(opts[:reraise_error_classes]) : nil
@@ -91,6 +87,6 @@ module Pester
     opts[:delay_interval]           ||= 30
     opts[:on_retry]                 ||= ->(_, _) {}
     opts[:on_max_attempts_exceeded] ||= Behaviors::WarnAndReraise
-    opts[:logger]                   ||= logger
+    opts[:logger]                   ||= Config.logger
   end
 end
