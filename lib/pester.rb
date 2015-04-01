@@ -55,25 +55,7 @@ module Pester
       begin
         return yield(block)
       rescue => e
-        retry_error_classes = opts[:retry_error_classes]
-        retry_error_messages = opts[:retry_error_messages]
-        reraise_error_classes = opts[:reraise_error_classes]
-
-        if retry_error_classes
-          if retry_error_messages
-            retry_decision = retry_error_classes.include?(e.class) && retry_error_messages.any? { |m| e.message[m] }
-          else
-            retry_decision = retry_error_classes.include?(e.class)
-          end
-        elsif retry_error_messages
-          retry_decision = retry_error_messages.any? { |m| e.message[m] }
-        elsif reraise_error_classes && reraise_error_classes.include?(e.class)
-          retry_decision = false
-        else
-          retry_decision = true
-        end
-
-        if !retry_decision
+        if !should_retry?(e, opts)
           opts[:logger].warn("Reraising exception from inside retry_action.")
           raise
         end
@@ -91,6 +73,26 @@ module Pester
   end
 
   private
+
+  def self.should_retry?(e, opts = {})
+    retry_error_classes = opts[:retry_error_classes]
+    retry_error_messages = opts[:retry_error_messages]
+    reraise_error_classes = opts[:reraise_error_classes]
+
+    if retry_error_classes
+      if retry_error_messages
+        retry_error_classes.include?(e.class) && retry_error_messages.any? { |m| e.message[m] }
+      else
+        retry_error_classes.include?(e.class)
+      end
+    elsif retry_error_messages
+      retry_error_messages.any? { |m| e.message[m] }
+    elsif reraise_error_classes && reraise_error_classes.include?(e.class)
+      false
+    else
+      true
+    end
+  end
 
   def self.merge_defaults(opts)
     opts[:retry_error_classes]      = opts[:retry_error_classes] ? Array(opts[:retry_error_classes]) : nil
