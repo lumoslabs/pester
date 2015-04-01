@@ -84,7 +84,7 @@ module Pester
           opts[:logger].warn("Failure encountered: #{e}, backing off and trying again #{attempts_left} more times. Trace: #{trace}")
           opts[:on_retry].call(attempt_num, opts[:delay_interval])
         else
-          opts[:on_max_attempts_exceeded].call(opts[:logger], opts[:max_attempts], e)
+          return opts[:on_max_attempts_exceeded].call(opts[:logger], opts[:max_attempts], e)
         end
       end
     end
