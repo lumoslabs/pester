@@ -26,6 +26,10 @@ module Pester
   # Options:
   #   retry_error_classes       - A single or array of exceptions to retry on. Thrown exceptions not in this list
   #                               (including parent/sub-classes) will be reraised
+  #   retry_error_messages      - A single or array of exception messages to retry on.  If only this options is passed,
+  #                               any exception with a message containing one of these strings will be retried.  If this
+  #                               option is passed along with retry_error_classes, retry will only happen when both the
+  #                               class and the message match the exception.
   #   reraise_error_classes     - A single or array of exceptions to always re-raiseon. Thrown exceptions not in
   #                               this list (including parent/sub-classes) will be retried
   #   max_attempts              - Max number of attempts to retry
@@ -37,14 +41,11 @@ module Pester
   #                               logic, non-matches will cause the exception to be reraised
   #
   # Usage:
-  #   retry_action do
+  #   retry_action(retry_error_classes: [Mysql2::Error]) do
   #     puts 'trying to remove a directory'
   #     FileUtils.rm_r(directory)
   #   end
-  #
-  #  retryable(error_classes: Mysql2::Error, message: /^Lost connection to MySQL server/, max_attempts: 2) do
-  #    ActiveRecord::Base.connection.execute("LONG MYSQL STATEMENT")
-  #  end
+
   def self.retry_action(opts = {}, &block)
     merge_defaults(opts)
     if opts[:retry_error_classes] && opts[:reraise_error_classes]
@@ -56,12 +57,20 @@ module Pester
         result = yield block
         return result
       rescue => e
-        class_reraise = opts[:retry_error_classes] && !opts[:retry_error_classes].include?(e.class)
-        reraise_error = opts[:reraise_error_classes] && opts[:reraise_error_classes].include?(e.class)
-        message_reraise = opts[:message] && !e.message[opts[:message]]
+        retry_error_classes = opts[:retry_error_classes]
+        retry_error_messages = opts[:retry_error_messages]
 
-        if class_reraise || message_reraise || reraise_error
-          match_type = class_reraise ? 'class' : 'message'
+        class_retry = retry_error_classes && retry_error_classes.include?(e.class)
+        if class_retry && retry_error_messages && !retry_error_messages.any? { |m| e.message[m] }
+          class_retry = false
+        end
+        message_retry = !retry_error_classes && retry_error_messages && retry_error_messages.any? { |m| e.message[m] }
+        reraise_error = opts[:reraise_error_classes] && opts[:reraise_error_classes].include?(e.class)
+
+        retry_decision = class_retry || message_retry || (!retry_error_messages && !retry_error_classes)
+
+        if reraise_error || !(retry_decision)
+          match_type = class_retry ? 'class' : 'message'
           opts[:logger].warn("Reraising exception from inside retry_action because provided #{match_type} was not matched.")
           raise
         end
@@ -72,7 +81,7 @@ module Pester
           opts[:logger].warn("Failure encountered: #{e}, backing off and trying again #{attempts_left} more times. Trace: #{trace}")
           opts[:on_retry].call(attempt_num, opts[:delay_interval])
         else
-          return opts[:on_max_attempts_exceeded].call(opts[:logger], opts[:max_attempts], e)
+          opts[:on_max_attempts_exceeded].call(opts[:logger], opts[:max_attempts], e)
         end
       end
     end
@@ -82,6 +91,7 @@ module Pester
 
   def self.merge_defaults(opts)
     opts[:retry_error_classes]      = opts[:retry_error_classes] ? Array(opts[:retry_error_classes]) : nil
+    opts[:retry_error_messages]     = opts[:retry_error_messages] ? Array(opts[:retry_error_messages]) : nil
     opts[:reraise_error_classes]    = opts[:reraise_error_classes] ? Array(opts[:reraise_error_classes]) : nil
     opts[:max_attempts]             ||= 4
     opts[:delay_interval]           ||= 30

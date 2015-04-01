@@ -55,7 +55,6 @@ shared_examples 'raises an error only in the correct cases with a retry class' d
     let(:actual_error_message) { matching_error_message }
 
     it_has_behavior "doesn't raise an error"
-
     it_has_behavior 'returns and succeeds'
   end
 end
@@ -66,7 +65,6 @@ shared_examples 'raises an error only in the correct cases with a reraise class'
     let(:actual_error_message) { non_matching_error_message }
 
     it_has_behavior "doesn't raise an error"
-
     it_has_behavior 'returns and succeeds'
   end
 
@@ -88,7 +86,6 @@ describe 'retry_action' do
     let(:options) { { delay_interval: 0, logger: null_logger } }
 
     it_has_behavior "doesn't raise an error"
-
     it_has_behavior 'returns and succeeds'
   end
 
@@ -97,7 +94,6 @@ describe 'retry_action' do
     let(:options) { { max_attempts: 3, logger: null_logger } }
 
     it_has_behavior "doesn't raise an error"
-
     it_has_behavior 'returns and succeeds'
   end
 
@@ -138,7 +134,7 @@ describe 'retry_action' do
       let(:options) do
         {
           retry_error_classes: expected_error_classes,
-          message: /^Lost connection to MySQL server/,
+          retry_error_messages: /^Lost connection to MySQL server/,
           max_attempts: 10,
           logger: null_logger
         }
