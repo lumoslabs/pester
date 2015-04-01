@@ -117,7 +117,7 @@ describe 'retry_action' do
       end
 
       context 'which does not do anything' do
-        let(:proc_to_call) { Proc.new {} }
+        let(:proc_to_call) { proc {} }
         it_has_behavior "doesn't raise an error"
       end
 
@@ -128,7 +128,7 @@ describe 'retry_action' do
 
       context 'which returns a value' do
         let(:return_value) { 'return_value' }
-        let(:proc_to_call) { Proc.new { return_value } }
+        let(:proc_to_call) { proc { return_value } }
         it_has_behavior "doesn't raise an error"
 
         it 'should return the result of the proc' do
