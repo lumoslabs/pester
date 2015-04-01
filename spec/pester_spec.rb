@@ -55,7 +55,6 @@ shared_examples 'raises an error only in the correct cases with a retry class' d
     let(:actual_error_message) { matching_error_message }
 
     it_has_behavior "doesn't raise an error"
-
     it_has_behavior 'returns and succeeds'
   end
 end
@@ -66,7 +65,6 @@ shared_examples 'raises an error only in the correct cases with a reraise class'
     let(:actual_error_message) { non_matching_error_message }
 
     it_has_behavior "doesn't raise an error"
-
     it_has_behavior 'returns and succeeds'
   end
 
@@ -88,7 +86,6 @@ describe 'retry_action' do
     let(:options) { { delay_interval: 0, logger: null_logger } }
 
     it_has_behavior "doesn't raise an error"
-
     it_has_behavior 'returns and succeeds'
   end
 
@@ -97,7 +94,6 @@ describe 'retry_action' do
     let(:options) { { max_attempts: 3, logger: null_logger } }
 
     it_has_behavior "doesn't raise an error"
-
     it_has_behavior 'returns and succeeds'
   end
 
@@ -111,17 +107,34 @@ describe 'retry_action' do
       it_has_behavior 'raises an error'
     end
 
-    context 'with on_max_attempts_exceeded specified (which does not raise)' do
-      let(:do_nothing_proc) { proc {} }
+    context 'with on_max_attempts_exceeded proc specified' do
       let(:options) do
         {
           max_attempts: max_attempts,
-          on_max_attempts_exceeded: do_nothing_proc,
+          on_max_attempts_exceeded: proc_to_call,
           logger: null_logger
         }
       end
 
-      it_has_behavior "doesn't raise an error"
+      context 'which does not do anything' do
+        let(:proc_to_call) { proc {} }
+        it_has_behavior "doesn't raise an error"
+      end
+
+      context 'which reraises' do
+        let(:proc_to_call) { Behaviors::WarnAndReraise }
+        it_has_behavior 'raises an error'
+      end
+
+      context 'which returns a value' do
+        let(:return_value) { 'return_value' }
+        let(:proc_to_call) { proc { return_value } }
+        it_has_behavior "doesn't raise an error"
+
+        it 'should return the result of the proc' do
+          expect(Pester.retry_action(options) { action }).to eq(return_value)
+        end
+      end
     end
   end
 
@@ -138,7 +151,7 @@ describe 'retry_action' do
       let(:options) do
         {
           retry_error_classes: expected_error_classes,
-          message: /^Lost connection to MySQL server/,
+          retry_error_messages: /^Lost connection to MySQL server/,
           max_attempts: 10,
           logger: null_logger
         }
