@@ -67,7 +67,7 @@ module Pester
 
         retry_decision = class_retry || message_retry || (!retry_error_messages && !retry_error_classes)
 
-        if reraise_error || !(retry_decision)
+        if reraise_error || !retry_decision
           match_type = class_retry ? 'class' : 'message'
           opts[:logger].warn("Reraising exception from inside retry_action because provided #{match_type} was not matched.")
           raise
