@@ -37,6 +37,7 @@ module Pester
   #                               passed to retry_with_backoff will retry first after 2 seconds, then 4, then 6, et al.
   #   on_retry                  - A Proc to be called on each successive failure, before the next retry
   #   on_max_attempts_exceeded  - A Proc to be called when attempt_num >= max_attempts - 1
+  #   logger                    - Where to log the output
   #
   # Usage:
   #   retry_action(retry_error_classes: [Mysql2::Error]) do
