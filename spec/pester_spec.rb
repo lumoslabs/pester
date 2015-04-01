@@ -136,8 +136,6 @@ describe 'retry_action' do
         end
       end
     end
-
-    context 'with'
   end
 
   context 'for retry_action calls with provided retry classes and message strings' do
