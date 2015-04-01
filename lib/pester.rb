@@ -29,7 +29,7 @@ module Pester
   #   retry_error_messages      - A single or array of exception messages to retry on.  If only this options is passed,
   #                               any exception with a message containing one of these strings will be retried.  If this
   #                               option is passed along with retry_error_classes, retry will only happen when both the
-  #                               class and the message match the exception.
+  #                               class and the message match the exception.  Strings and regexes are both permitted.
   #   reraise_error_classes     - A single or array of exceptions to always re-raiseon. Thrown exceptions not in
   #                               this list (including parent/sub-classes) will be retried
   #   max_attempts              - Max number of attempts to retry
@@ -37,8 +37,6 @@ module Pester
   #                               passed to retry_with_backoff will retry first after 2 seconds, then 4, then 6, et al.
   #   on_retry                  - A Proc to be called on each successive failure, before the next retry
   #   on_max_attempts_exceeded  - A Proc to be called when attempt_num >= max_attempts - 1
-  #   message                   - String or regex to look for in thrown exception messages. Matches will trigger retry
-  #                               logic, non-matches will cause the exception to be reraised
   #
   # Usage:
   #   retry_action(retry_error_classes: [Mysql2::Error]) do
