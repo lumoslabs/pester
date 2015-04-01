@@ -117,8 +117,8 @@ describe 'retry_action' do
       end
 
       context 'which does not do anything' do
-        let(:proc_to_call) { proc {} }
-
+        let(:proc_to_call) { Proc.new {} }
+        it_has_behavior "doesn't raise an error"
       end
 
       context 'which reraises' do
@@ -132,7 +132,7 @@ describe 'retry_action' do
         it_has_behavior "doesn't raise an error"
 
         it 'should return the result of the proc' do
-          expect { Pester.retry_action(options) { action } }.to eq(return_value)
+          expect(Pester.retry_action(options) { action }).to eq(return_value)
         end
       end
     end
