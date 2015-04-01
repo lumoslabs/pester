@@ -58,19 +58,24 @@ module Pester
       rescue => e
         retry_error_classes = opts[:retry_error_classes]
         retry_error_messages = opts[:retry_error_messages]
+        reraise_error_classes = opts[:reraise_error_classes]
 
-        class_retry = retry_error_classes && retry_error_classes.include?(e.class)
-        if class_retry && retry_error_messages && !retry_error_messages.any? { |m| e.message[m] }
-          class_retry = false
+        if retry_error_classes
+          if retry_error_messages
+            retry_decision = retry_error_classes.include?(e.class) && retry_error_messages.any? { |m| e.message[m] }
+          else
+            retry_decision = retry_error_classes.include?(e.class)
+          end
+        elsif retry_error_messages
+          retry_decision = retry_error_messages.any? { |m| e.message[m] }
+        elsif reraise_error_classes && reraise_error_classes.include?(e.class)
+          retry_decision = false
+        else
+          retry_decision = true
         end
-        message_retry = !retry_error_classes && retry_error_messages && retry_error_messages.any? { |m| e.message[m] }
-        reraise_error = opts[:reraise_error_classes] && opts[:reraise_error_classes].include?(e.class)
 
-        retry_decision = class_retry || message_retry || (!retry_error_messages && !retry_error_classes)
-
-        if reraise_error || !retry_decision
-          match_type = class_retry ? 'class' : 'message'
-          opts[:logger].warn("Reraising exception from inside retry_action because provided #{match_type} was not matched.")
+        if !retry_decision
+          opts[:logger].warn("Reraising exception from inside retry_action.")
           raise
         end
 
