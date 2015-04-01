@@ -53,8 +53,7 @@ module Pester
 
     opts[:max_attempts].times do |attempt_num|
       begin
-        result = yield block
-        return result
+        return yield(block)
       rescue => e
         retry_error_classes = opts[:retry_error_classes]
         retry_error_messages = opts[:retry_error_messages]
