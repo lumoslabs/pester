@@ -55,8 +55,8 @@ module Pester
       begin
         return yield(block)
       rescue => e
-        if !should_retry?(e, opts)
-          opts[:logger].warn("Reraising exception from inside retry_action.")
+        unless should_retry?(e, opts)
+          opts[:logger].warn('Reraising exception from inside retry_action.')
           raise
         end
 
