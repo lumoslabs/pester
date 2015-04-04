@@ -1,0 +1,9 @@
+---
+language: ruby
+cache:
+  - bundler
+rvm:
+  - ruby-2.0.0-p353
+env:
+  TRAVIS: true
+script: "bundle exec rspec spec --color"
