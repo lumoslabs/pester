@@ -71,6 +71,7 @@ module Pester
         end
       end
     end
+    nil
   end
 
   private
