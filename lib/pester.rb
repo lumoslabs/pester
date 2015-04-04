@@ -9,7 +9,7 @@ module Pester
   end
 
   def self.retry(options = {}, &block)
-    retry_action(options.merge(on_retry: ->(_, delay_interval) { sleep(delay_interval) }), &block)
+    retry_action(options.merge(on_retry: Behaviors::Sleep::Constant), &block)
   end
 
   def self.retry_with_backoff(options = {}, &block)
@@ -71,6 +71,8 @@ module Pester
         end
       end
     end
+
+    nil
   end
 
   private

@@ -28,6 +28,17 @@ shared_examples 'returns and succeeds' do
   end
 end
 
+shared_examples 'has not run' do
+  it 'returns the intended result' do
+    expect(Pester.retry_action(options) { action }).to eq(nil)
+  end
+
+  it 'succeeds exactly once' do
+    Pester.retry_action(options) { action }
+    expect(failer.successes).to eq(0)
+  end
+end
+
 shared_examples 'raises an error only in the correct cases with a retry class' do
   context 'when neither the class is in the retry list, nor is the message matched' do
     let(:actual_error_class) { non_matching_error_class }
@@ -190,6 +201,59 @@ describe 'retry_action' do
 
         it_has_behavior 'raises an error only in the correct cases with a reraise class'
       end
+    end
+  end
+
+  context 'when max_attempts is set' do
+    let(:intended_result) { 42 }
+    let(:options) { { delay_interval: 0, logger: null_logger, max_attempts: max_attempts } }
+
+    shared_examples "doesn't even run" do
+      let(:action) { failer.fail(StandardError, 'Dying') }
+
+      context 'for block does not fail' do
+        let(:failer) { ScriptedFailer.new(0, intended_result) }
+
+        it_has_behavior "doesn't raise an error"
+        it_has_behavior 'has not run'
+      end
+
+      context 'for block fails' do
+        let(:failer) { ScriptedFailer.new(1, intended_result) }
+
+        it_has_behavior "doesn't raise an error"
+        it_has_behavior 'has not run'
+      end
+    end
+
+    context 'to one' do
+      let(:max_attempts) { 1 }
+      let(:action) { failer.fail(StandardError, 'Dying') }
+
+      context 'for block does not fail' do
+        let(:failer) { ScriptedFailer.new(0, intended_result) }
+
+        it_has_behavior "doesn't raise an error"
+        it_has_behavior 'returns and succeeds'
+      end
+
+      context 'for block fails' do
+        let(:failer) { ScriptedFailer.new(1, intended_result) }
+
+        it_has_behavior 'raises an error'
+      end
+    end
+
+    context 'to zero' do
+      let(:max_attempts) { 0 }
+
+      it_has_behavior "doesn't even run"
+    end
+
+    context 'to less than zero' do
+      let(:max_attempts) { -1 }
+
+      it_has_behavior "doesn't even run"
     end
   end
 end
