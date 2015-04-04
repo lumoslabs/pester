@@ -1,6 +1,6 @@
-# Pester
+# Pester - Retry logic for external services and offline processes
 
-TODO: Write a gem description
+![](https://travis-ci.org/lumoslabs/pester.svg?branch=master)
 
 ## Installation
 
