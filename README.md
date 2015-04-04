@@ -52,7 +52,8 @@ Pester can be configured to be picky about what it chooses to retry and what it 
 The first two are mutually-exclusive whitelist and blacklists, both taking either a single error class or an array. Raising an error not covered by `retry_error_classes` (whitelist) causes it to immediately fail:
 
     irb(main):002:0> Pester.retry(retry_error_classes: NotImplementedError) do
-      puts 'Trying...'; fail 'derp'
+      puts 'Trying...'
+      fail 'derp'
     end
     Trying...
     RuntimeError: derp
@@ -60,7 +61,8 @@ The first two are mutually-exclusive whitelist and blacklists, both taking eithe
 Raising an error covered by `reraise_error_classes` (blacklist) causes it to immediately fail:
 
     irb(main):002:0> Pester.retry(reraise_error_classes: NotImplementedError) do
-      puts 'Trying...'; raise NotImplementedError.new('derp')
+      puts 'Trying...'
+      raise NotImplementedError.new('derp')
     end
     Trying...
     NotImplementedError: derp
@@ -68,7 +70,8 @@ Raising an error covered by `reraise_error_classes` (blacklist) causes it to imm
 `retry_error_messages` also takes a single string or array, and calls `include?` on the error message. If it matches, the error's retried:
 
     irb(main):002:0> Pester.retry(retry_error_messages: 'please') do
-      puts 'Trying...'; fail 'retry this, please'
+      puts 'Trying...'
+      fail 'retry this, please'
     end
     Trying...
     Trying...
@@ -76,7 +79,8 @@ Raising an error covered by `reraise_error_classes` (blacklist) causes it to imm
 Because it calls `include?`, this also works for regexes:
 
     irb(main):002:0> Pester.retry(retry_error_messages: /\d/) do
-      puts 'Trying...'; fail 'retry this 2'
+      puts 'Trying...'
+      fail 'retry this 2'
     end
     Trying...
     Trying...
