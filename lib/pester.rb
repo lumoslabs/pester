@@ -8,7 +8,7 @@ module Pester
   def self.configure(&block)
     Config.configure(&block)
     unless Config.environments.nil?
-      self.environments = Config.environments.select { |_, e| e.is_a?(Hash)}.map { |e| Environment.new(e) }
+      self.environments = Hash[Config.environments.select { |_, e| e.is_a?(Hash)}.map { |k, e| [k.to_sym, Environment.new(e)] }]
     end
   end
 
@@ -79,6 +79,16 @@ module Pester
     nil
   end
 
+  def respond_to?(method_sym)
+    super || Config.environments.has_key?(method_sym)
+  end
+
+  def method_missing(method_sym)
+    if Config.environments.has_key?(method_sym)
+      Config.environments[method_sym]
+    end
+  end
+
   class << self
     attr_accessor :environments
   end
@@ -86,8 +96,8 @@ module Pester
   private
 
   def self.should_retry?(e, opts = {})
-    retry_error_classes = opts[:retry_error_classes]
-    retry_error_messages = opts[:retry_error_messages]
+    retry_error_classes   = opts[:retry_error_classes]
+    retry_error_messages  = opts[:retry_error_messages]
     reraise_error_classes = opts[:reraise_error_classes]
 
     if retry_error_classes
