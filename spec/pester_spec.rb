@@ -258,6 +258,28 @@ describe 'retry_action' do
   end
 end
 
+describe 'environments' do
+  context 'when a non-hash environment is configured' do
+    it 'does not add it to the Pester environment list' do
+      Pester.configure do |config|
+        config.environments[:abc] = 1234
+      end
+
+      expect(Pester.environments.count).to eq(0)
+    end
+  end
+
+  context 'when a non-hash environment is configured' do
+    it 'does not add it to the Pester environment list' do
+      Pester.configure do |config|
+        config.environments[:abc] = { option: 1234 }
+      end
+
+      expect(Pester.environments.count).to eq(1)
+    end
+  end
+end
+
 describe 'logger' do
   context 'when not otherwise configured' do
     it 'defaults to the ruby logger' do

@@ -1,11 +1,15 @@
 require 'pester/behaviors'
 require 'pester/behaviors/sleep'
+require 'pester/environment'
 require 'pester/config'
 require 'pester/version'
 
 module Pester
   def self.configure(&block)
     Config.configure(&block)
+    unless Config.environments.nil?
+      self.environments = Config.environments.select { |_, e| e.is_a?(Hash)}.map { |e| Environment.new(e) }
+    end
   end
 
   def self.retry(options = {}, &block)
@@ -73,6 +77,10 @@ module Pester
     end
 
     nil
+  end
+
+  class << self
+    attr_accessor :environments
   end
 
   private
