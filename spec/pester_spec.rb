@@ -272,12 +272,24 @@ describe '#environments' do
   end
 
   context 'when a non-hash environment is configured' do
-    it 'does not add it to the Pester environment list' do
+    let(:environment_name) { :abc }
+    let(:options) { { option: 1234 } }
+
+    it 'adds it to the Pester environment list' do
       Pester.configure do |config|
-        config.environments[:abc] = { option: 1234 }
+        config.environments[environment_name] = options
       end
 
       expect(Pester.environments.count).to eq(1)
+    end
+
+    it 'contains an Environment with the appropriate options' do
+      Pester.configure do |config|
+        config.environments[environment_name] = options
+      end
+
+      expect(Pester.environments[environment_name].class).to eq(Pester::Environment)
+      expect(Pester.environments[environment_name].options).to eq(options)
     end
   end
 end
