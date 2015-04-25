@@ -87,6 +87,38 @@ Because it calls `include?`, this also works for regexes:
 
 ### Configuration
 
+#### Environments
+
+The easiest way to coordinate sets of Pester options across an app is via environments--these are basically option hashes configured in Pester by name:
+
+    Pester.configure do |c|
+      c.environments[:aws]      = { max_attempts: 3, delay_interval: 5 }
+      c.environments[:internal] = { max_attempts: 2, delay_interval: 0 }
+    end
+
+This will create two environments, `aws` and `internal`, which allow you to employ different backoff strategies, depending on the usage context. These are employed simply by calling `Pester.environment_name.retry` (where `retry` can also be another helper method):
+
+    def aws_action
+      Pester.aws.retry do
+        aws_call
+      end
+    end
+
+    def action
+      Pester.internal.retry do
+        some_other_call
+      end
+    end
+
+Environments can also be merged with retry helper methods:
+
+    Pester.aws.retry  # acts different from
+    Pester.aws.retry_with_exponential_backoff
+
+where the helper method's `Behavior` will take precedence.
+
+#### Logging
+
 Pester will write retry and exhaustion information into your logs, by default using a ruby `Logger` to standard out. This can be configured either per-call, or one time per application in your initializer via `Pester#configure`. The following will suppress all logs by using a class that simply does nothing with log data, as found in `spec/`:
 
     Pester.configure do |c|

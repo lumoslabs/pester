@@ -87,7 +87,7 @@ shared_examples 'raises an error only in the correct cases with a reraise class'
   end
 end
 
-describe 'retry_action' do
+describe '#retry_action' do
   let(:intended_result) { 1000 }
   let(:action) { failer.fail(UnmatchedError, 'Dying') }
   let(:null_logger) { NullLogger.new }
@@ -258,7 +258,43 @@ describe 'retry_action' do
   end
 end
 
-describe 'logger' do
+describe '#environments' do
+  before { Pester.environments = {} }
+
+  context 'when a non-hash environment is configured' do
+    it 'does not add it to the Pester environment list' do
+      Pester.configure do |config|
+        config.environments[:abc] = 1234
+      end
+
+      expect(Pester.environments.count).to eq(0)
+    end
+  end
+
+  context 'when a non-hash environment is configured' do
+    let(:environment_name) { :abc }
+    let(:options) { { option: 1234 } }
+
+    it 'adds it to the Pester environment list' do
+      Pester.configure do |config|
+        config.environments[environment_name] = options
+      end
+
+      expect(Pester.environments.count).to eq(1)
+    end
+
+    it 'contains an Environment with the appropriate options' do
+      Pester.configure do |config|
+        config.environments[environment_name] = options
+      end
+
+      expect(Pester.environments[environment_name].class).to eq(Pester::Environment)
+      expect(Pester.environments[environment_name].options).to eq(options)
+    end
+  end
+end
+
+describe '#logger' do
   context 'when not otherwise configured' do
     it 'defaults to the ruby logger' do
       Pester.configure do |config|
