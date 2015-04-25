@@ -8,7 +8,7 @@ module Pester
   def self.configure(&block)
     Config.configure(&block)
     unless Config.environments.nil?
-      self.environments = Hash[Config.environments.select { |_, e| e.is_a?(Hash)}.map { |k, e| [k.to_sym, Environment.new(e)] }]
+      self.environments = Hash[Config.environments.select { |_, e| e.is_a?(Hash) }.map { |k, e| [k.to_sym, Environment.new(e)] }]
     end
   end
 
@@ -80,12 +80,14 @@ module Pester
   end
 
   def respond_to?(method_sym)
-    super || Config.environments.has_key?(method_sym)
+    super || Config.environments.key?(method_sym)
   end
 
   def method_missing(method_sym)
-    if Config.environments.has_key?(method_sym)
+    if Config.environments.key?(method_sym)
       Config.environments[method_sym]
+    else
+      super
     end
   end
 
