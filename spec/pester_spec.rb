@@ -290,9 +290,9 @@ describe '#environments' do
       expect(Pester.environments[environment_name].options).to eq(options)
     end
 
-    it 'contains an Environment with the appropriate options' do
-      expect(Pester.environments[environment_name].class).to eq(Pester::Environment)
-      expect(Pester.environments[environment_name].options).to eq(options)
+    it 'contains an Environment addressable directly from Pester with the appropriate options' do
+      expect(Pester.send(environment_name).class).to eq(Pester::Environment)
+      expect(Pester.send(environment_name).options).to eq(options)
     end
   end
 end
