@@ -5,22 +5,27 @@ require 'pester/config'
 require 'pester/version'
 
 module Pester
-  def self.configure(&block)
+  extend self
+  attr_accessor :environments
+
+  def configure(&block)
     Config.configure(&block)
-    unless Config.environments.nil?
-      self.environments = Hash[Config.environments.select { |_, e| e.is_a?(Hash) }.map { |k, e| [k.to_sym, Environment.new(e)] }]
-    end
+
+    return if Config.environments.nil?
+
+    valid_environments = Config.environments.select { |_, e| e.is_a?(Hash) }
+    @environments = Hash[valid_environments.map { |k, e| [k.to_sym, Environment.new(e)] }]
   end
 
-  def self.retry(options = {}, &block)
+  def retry_constant(options = {}, &block)
     retry_action(options.merge(on_retry: Behaviors::Sleep::Constant), &block)
   end
 
-  def self.retry_with_backoff(options = {}, &block)
+  def retry_with_backoff(options = {}, &block)
     retry_action(options.merge(on_retry: Behaviors::Sleep::Linear), &block)
   end
 
-  def self.retry_with_exponential_backoff(options = {}, &block)
+  def retry_with_exponential_backoff(options = {}, &block)
     retry_action({ delay_interval: 1 }.merge(options).merge(on_retry: Behaviors::Sleep::Exponential), &block)
   end
 
@@ -49,7 +54,7 @@ module Pester
   #     FileUtils.rm_r(directory)
   #   end
 
-  def self.retry_action(opts = {}, &block)
+  def retry_action(opts = {}, &block)
     merge_defaults(opts)
     if opts[:retry_error_classes] && opts[:reraise_error_classes]
       fail 'You can only have one of retry_error_classes or reraise_error_classes'
@@ -79,25 +84,21 @@ module Pester
     nil
   end
 
-  def respond_to?(method_sym)
+  def respond_to?(method_sym, options = {}, &block)
     super || Config.environments.key?(method_sym)
   end
 
-  def method_missing(method_sym)
-    if Config.environments.key?(method_sym)
-      Config.environments[method_sym]
+  def method_missing(method_sym, options = {}, &block)
+    if @environments.key?(method_sym)
+      @environments[method_sym]
     else
       super
     end
   end
 
-  class << self
-    attr_accessor :environments
-  end
-
   private
 
-  def self.should_retry?(e, opts = {})
+  def should_retry?(e, opts = {})
     retry_error_classes   = opts[:retry_error_classes]
     retry_error_messages  = opts[:retry_error_messages]
     reraise_error_classes = opts[:reraise_error_classes]
@@ -117,7 +118,7 @@ module Pester
     end
   end
 
-  def self.merge_defaults(opts)
+  def merge_defaults(opts)
     opts[:retry_error_classes]      = opts[:retry_error_classes] ? Array(opts[:retry_error_classes]) : nil
     opts[:retry_error_messages]     = opts[:retry_error_messages] ? Array(opts[:retry_error_messages]) : nil
     opts[:reraise_error_classes]    = opts[:reraise_error_classes] ? Array(opts[:reraise_error_classes]) : nil
@@ -127,4 +128,6 @@ module Pester
     opts[:on_max_attempts_exceeded] ||= Behaviors::WarnAndReraise
     opts[:logger]                   ||= Config.logger
   end
+
+  alias_method :retry, :retry_action
 end

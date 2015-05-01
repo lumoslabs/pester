@@ -1,14 +1,29 @@
 Metrics/AbcSize:
-  Max: 20
+  Max: 27
+
+Metrics/CyclomaticComplexity:
+  Max: 7
 
 Metrics/LineLength:
   Max: 140
 
+Metrics/MethodLength:
+  Max: 23
+
+Metrics/PerceivedComplexity:
+  Max: 9
+
 Style/Documentation:
-    Enabled: false
+  Enabled: false
+
+Style/ModuleFunction:
+  Enabled: false
 
 Style/RaiseArgs:
-    Enabled: false
+  Enabled: false
+
+Style/SpaceAroundOperators:
+  Enabled: false
 
 Style/SignalException:
   Enabled: false

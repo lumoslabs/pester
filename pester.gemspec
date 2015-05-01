@@ -10,9 +10,9 @@ Gem::Specification.new do |spec|
   spec.email         = ['marc@lumoslabs.com']
   spec.summary       = 'Common block-based retry for external calls.'
   spec.description   = <<-EOD
-                       |We found ourselves constantly wrapping network-facing calls with all kinds of bespoke,
-                       | copied, and rewritten retry logic. This gem is an attempt to unify common behaviors,
-                       | like simple retry, retry with linear backoff, and retry with exponential backoff.
+                       We found ourselves constantly wrapping network-facing calls with all kinds of bespoke,
+                       copied, and rewritten retry logic. This gem is an attempt to unify common behaviors,
+                       like simple retry, retry with linear backoff, and retry with exponential backoff.
 EOD
   spec.homepage      = 'https://github.com/lumoslabs/pester'
   spec.license       = 'MIT'
