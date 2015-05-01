@@ -10,10 +10,11 @@ module Pester
 
   def configure(&block)
     Config.configure(&block)
-    unless Config.environments.nil?
-      valid_environments = Config.environments.select { |_, e| e.is_a?(Hash) }
-      @environments = Hash[valid_environments.map { |k, e| [k.to_sym, Environment.new(e)] }]
-    end
+
+    return if Config.environments.nil?
+
+    valid_environments = Config.environments.select { |_, e| e.is_a?(Hash) }
+    @environments = Hash[valid_environments.map { |k, e| [k.to_sym, Environment.new(e)] }]
   end
 
   def retry_constant(options = {}, &block)
