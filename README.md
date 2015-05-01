@@ -11,7 +11,7 @@ From the outset, the goal of Pester is to offer a simple interface. For example:
 
     irb(main):001:0> require 'pester'
     => true
-    irb(main):002:0> Pester.retry { fail 'derp' }
+    irb(main):002:0> Pester.retry_constant { fail 'derp' }
     W, [2015-04-04T10:37:46.413158 #87600]  WARN -- : Failure encountered: derp, backing off and trying again 3 more times. etc etc
 
 will retry the block--which always fails--until Pester has exhausted its amount of retries. With no options provided, this will sleep for a constant number of seconds between attempts.
@@ -24,7 +24,7 @@ Pester's basic retry behaviors are defined by three options:
 
 `delay_interval` is the unit, in seconds, that will be delayed between attempts. Normally, this is just the total number of seconds, but it can change with other `Behavior`s. `max_attempts` is the number of tries Pester will make, including the initial one. If this is set to 1, Pester will basically not retry; less than 1, it will not even bother executing the block:
 
-    irb(main):001:0> Pester.retry(max_attempts: 0) { puts 'Trying...'; fail 'derp' }
+    irb(main):001:0> Pester.retry_constant(max_attempts: 0) { puts 'Trying...'; fail 'derp' }
     => nil
 
 `on_retry` defines the behavior between retries, which can either be a custom block of code, or one of the predefined `Behavior`s, specifically in `Pester::Behaviors::Sleep`. If passed an empty lambda/block, Pester will immediately retry. When writing a custom behavior, `on_retry` expects a block that can be called with two parameters, `attempt_num`, and `delay_interval`, the idea being that these will mostly be used to define a function that determines just how long to sleep between attempts.
@@ -35,7 +35,7 @@ Three behaviors are provided out-of-the box:
 * `Linear` simply multiplies `attempt_num` by `delay_interval` and sleeps for that many seconds
 * `Exponential` sleeps for 2<sup>(`attempt_num` - 1)</sup> * `delay_interval` seconds
 
-All three are available either by passing the behaviors to `on_retry`, or by calling the increasingly-verbosely-named `retry` (constant), `retry_with_backoff` (linear), or `retry_with_exponential_backoff` (exponential).
+All three are available either by passing the behaviors to `on_retry`, or by calling the increasingly-verbosely-named `retry_constant` (constant), `retry_with_backoff` (linear), or `retry_with_exponential_backoff` (exponential). `retry` by itself *will not* actually retry anything, unless provided with an `on_retry` function, either per-call or in the relevant environment.
 
 Pester does log retry attempts (see below), however custom retry behavior that wraps existing `Behavior`s may be appropriate for logging custom information, incrementing statsd counters, etc. Also of note, different loggers can be passed per-call via the `logger` option.
 
@@ -51,7 +51,7 @@ Pester can be configured to be picky about what it chooses to retry and what it 
 
 The first two are mutually-exclusive whitelist and blacklists, both taking either a single error class or an array. Raising an error not covered by `retry_error_classes` (whitelist) causes it to immediately fail:
 
-    irb(main):002:0> Pester.retry(retry_error_classes: NotImplementedError) do
+    irb(main):002:0> Pester.retry_constant(retry_error_classes: NotImplementedError) do
       puts 'Trying...'
       fail 'derp'
     end
@@ -60,7 +60,7 @@ The first two are mutually-exclusive whitelist and blacklists, both taking eithe
 
 Raising an error covered by `reraise_error_classes` (blacklist) causes it to immediately fail:
 
-    irb(main):002:0> Pester.retry(reraise_error_classes: NotImplementedError) do
+    irb(main):002:0> Pester.retry_constant(reraise_error_classes: NotImplementedError) do
       puts 'Trying...'
       raise NotImplementedError.new('derp')
     end
@@ -69,7 +69,7 @@ Raising an error covered by `reraise_error_classes` (blacklist) causes it to imm
 
 `retry_error_messages` also takes a single string or array, and calls `include?` on the error message. If it matches, the error's retried:
 
-    irb(main):002:0> Pester.retry(retry_error_messages: 'please') do
+    irb(main):002:0> Pester.retry_constant(retry_error_messages: 'please') do
       puts 'Trying...'
       fail 'retry this, please'
     end
@@ -78,7 +78,7 @@ Raising an error covered by `reraise_error_classes` (blacklist) causes it to imm
 
 Because it calls `include?`, this also works for regexes:
 
-    irb(main):002:0> Pester.retry(retry_error_messages: /\d/) do
+    irb(main):002:0> Pester.retry_constant(retry_error_messages: /\d/) do
       puts 'Trying...'
       fail 'retry this 2'
     end
@@ -92,8 +92,8 @@ Because it calls `include?`, this also works for regexes:
 The easiest way to coordinate sets of Pester options across an app is via environments--these are basically option hashes configured in Pester by name:
 
     Pester.configure do |c|
-      c.environments[:aws]      = { max_attempts: 3, delay_interval: 5 }
-      c.environments[:internal] = { max_attempts: 2, delay_interval: 0 }
+      c.environments[:aws]      = { max_attempts: 3, delay_interval: 5, on_retry: Pester::Behaviors::Sleep::Constant }
+      c.environments[:internal] = { max_attempts: 2, delay_interval: 0, on_retry: Pester::Behaviors::Sleep::Constant }
     end
 
 This will create two environments, `aws` and `internal`, which allow you to employ different backoff strategies, depending on the usage context. These are employed simply by calling `Pester.environment_name.retry` (where `retry` can also be another helper method):
@@ -112,7 +112,7 @@ This will create two environments, `aws` and `internal`, which allow you to empl
 
 Environments can also be merged with retry helper methods:
 
-    Pester.aws.retry  # acts different from
+    Pester.aws.retry_constant  # acts different from
     Pester.aws.retry_with_exponential_backoff
 
 where the helper method's `Behavior` will take precedence.
@@ -127,7 +127,7 @@ Pester will write retry and exhaustion information into your logs, by default us
 
 And thus:
 
-    irb(main):002:0> Pester.retry(delay_interval: 1) { puts 'Trying...'; fail 'derp' }
+    irb(main):002:0> Pester.retry_constant(delay_interval: 1) { puts 'Trying...'; fail 'derp' }
     Trying...
     Trying...
     Trying...
