@@ -1,5 +1,9 @@
 # Pester - Coordinated retry logic
 
+## This gem is abandoned, but perfectly operable
+
+As of November 2017, this gem is still in production in a few various legacy corners of Lumosity, but we haven't committed code for two and a half years. Everything works as advertised, and we'll gladly accept pull requests, but we've moved most new and existing code over to [retriable](https://github.com/kamui/retriable/). We originally wrote `pester` as a more-configurable, easier-to-read alternative, but after successfully getting the single most-unique feature, contexts, [merged into retriable](https://github.com/kamui/retriable/pull/43), there's not really a great reason to have two different retry gems.
+
 [![Travis](https://travis-ci.org/lumoslabs/pester.svg?branch=master)](https://travis-ci.org/lumoslabs/pester)
 [![Code Climate](https://codeclimate.com/github/lumoslabs/pester/badges/gpa.svg)](https://codeclimate.com/github/lumoslabs/pester)
 
